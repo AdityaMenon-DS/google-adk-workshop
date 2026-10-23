@@ -3,6 +3,10 @@
 Two Python projects built with Google's Agent Development Kit: a personal
 assistant with tools and a multi-agent study planner.
 
+## Live preview
+
+Try the [interactive browser preview](https://adityamenon-ds.github.io/google-adk-workshop/). The calculator and text-count examples run in your browser. Search and SmartStudy use sample behavior in this preview; it does not call Gemini. To run the actual Python ADK agents, follow the setup instructions below.
+
 ## Projects
 
 ### Personal assistant
