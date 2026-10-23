@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="An interactive browser preview of two projects built with Google's Agent Development Kit.">
+  <title>Google ADK Workshop | Interactive Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --panel: #111c2d;
+      --panel-raised: #172438;
+      --line: #283950;
+      --ink: #eef4fb;
+      --muted: #a8b8cc;
+      --accent: #a9d3ff;
+      --accent-strong: #4b9cff;
+      --warm: #f5b765;
+      --good: #8be0bd;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 80% -10%, #1d3553 0, transparent 36rem), var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { color: white; }
+    button, input, textarea { font: inherit; }
+    .wrap { width: min(1120px, calc(100% - 36px)); margin: 0 auto; }
+    .topbar { border-bottom: 1px solid rgba(168,184,204,.15); }
+    .nav { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 700; letter-spacing: .01em; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: linear-gradient(145deg, #f6bd68, #f08c58); color: #1d2430; font-weight: 850; }
+    .nav-link { font-size: .92rem; font-weight: 650; text-decoration: none; }
+    .hero { padding: 68px 0 38px; }
+    .eyebrow { margin: 0 0 14px; color: var(--warm); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { max-width: 800px; margin: 0; font-size: clamp(2.2rem, 5.8vw, 4.3rem); line-height: 1.04; letter-spacing: -.045em; }
+    .hero-copy { max-width: 760px; margin: 19px 0 0; color: var(--muted); font-size: 1.08rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 23px; }
+    .chip { padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(17,28,45,.72); color: #d5e4f4; font-size: .82rem; }
+    .notice { display: flex; gap: 12px; align-items: flex-start; margin: 24px 0 0; padding: 13px 15px; max-width: 900px; border: 1px solid #6b552f; border-radius: 12px; background: rgba(72, 52, 25, .3); color: #f0dfc3; font-size: .9rem; }
+    .notice strong { color: #ffe0aa; white-space: nowrap; }
+    .demo { margin: 14px 0 70px; border: 1px solid var(--line); border-radius: 20px; background: rgba(17,28,45,.94); box-shadow: var(--shadow); overflow: hidden; }
+    .demo-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .demo-head h2 { margin: 0; font-size: 1rem; }
+    .demo-label { color: var(--muted); font-size: .82rem; }
+    .tabs { display: flex; gap: 7px; padding: 14px 22px 0; }
+    .tab { border: 1px solid transparent; padding: 9px 14px; border-radius: 10px 10px 0 0; background: transparent; color: var(--muted); cursor: pointer; }
+    .tab[aria-selected="true"] { border-color: var(--line); border-bottom-color: var(--panel); background: var(--panel); color: var(--ink); }
+    .view { display: none; padding: 22px; border-top: 1px solid var(--line); }
+    .view.active { display: block; }
+    .assistant-grid { display: grid; grid-template-columns: 245px minmax(0, 1fr); gap: 20px; }
+    .side-title { margin: 1px 0 11px; color: var(--muted); font-size: .78rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+    .prompt-list { display: grid; gap: 8px; }
+    .prompt-pick { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #142136; color: #e2edf9; text-align: left; cursor: pointer; }
+    .prompt-pick:hover { border-color: #6587ad; background: #1a2a41; }
+    .small-note { margin: 12px 0 0; color: var(--muted); font-size: .83rem; }
+    .chat { min-height: 315px; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 15px; background: #0d1727; overflow: hidden; }
+    .chat-top { padding: 12px 15px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+    .messages { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 18px; }
+    .empty { margin: auto; max-width: 340px; color: var(--muted); text-align: center; }
+    .bubble { max-width: 88%; padding: 12px 14px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .bubble.user { align-self: flex-end; border: 1px solid #2f72b6; background: #174a79; }
+    .bubble.agent { align-self: flex-start; border: 1px solid var(--line); background: var(--panel-raised); }
+    .bubble.agent a { display: inline-block; margin-top: 8px; }
+    .composer { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px; border-top: 1px solid var(--line); }
+    textarea, input { width: 100%; border: 1px solid #344961; border-radius: 10px; background: #111c2c; color: var(--ink); outline: none; }
+    textarea:focus, input:focus { border-color: var(--accent-strong); box-shadow: 0 0 0 3px rgba(75,156,255,.14); }
+    textarea { min-height: 49px; max-height: 130px; resize: vertical; padding: 12px; }
+    input { padding: 11px 12px; }
+    .primary { align-self: end; min-height: 48px; padding: 0 17px; border: 0; border-radius: 10px; background: var(--accent-strong); color: #071426; font-weight: 800; cursor: pointer; }
+    .primary:hover { background: #78b8ff; }
+    .planner-grid { display: grid; grid-template-columns: minmax(230px, .75fr) minmax(0, 1.25fr); gap: 20px; }
+    .form-card, .plan-card { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #0d1727; }
+    .form-card h3, .plan-card h3 { margin: 0 0 6px; font-size: 1rem; }
+    .form-card > p, .plan-card > p { margin: 0 0 16px; color: var(--muted); font-size: .85rem; }
+    .field { display: grid; gap: 6px; margin: 13px 0; }
+    .field label { color: #d7e4f2; font-size: .86rem; font-weight: 650; }
+    .plan-card { max-height: 520px; overflow: auto; }
+    .plan-days { display: grid; gap: 10px; margin-top: 15px; }
+    .day { padding: 12px 13px; border: 1px solid var(--line); border-radius: 10px; background: #142136; }
+    .day h4 { margin: 0 0 6px; font-size: .92rem; }
+    .day p { margin: 3px 0; color: #c3d3e5; font-size: .83rem; }
+    .workflow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 17px 0 0; }
+    .step { padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: #142136; }
+    .step b { display: block; color: var(--accent); font-size: .84rem; }
+    .step span { color: var(--muted); font-size: .78rem; }
+    .below { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: -42px 0 70px; }
+    .info-card { padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: rgba(17,28,45,.7); }
+    .info-card h2 { margin: 0 0 7px; font-size: 1rem; }
+    .info-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+    footer { padding: 20px 0 34px; border-top: 1px solid rgba(168,184,204,.15); color: var(--muted); font-size: .84rem; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    @media (max-width: 760px) {
+      .hero { padding-top: 48px; }
+      .demo-head { align-items: flex-start; flex-direction: column; }
+      .assistant-grid, .planner-grid, .below { grid-template-columns: 1fr; }
+      .workflow { grid-template-columns: repeat(2, 1fr); }
+      .view { padding: 15px; }
+      .tabs { padding-inline: 15px; }
+      .notice { flex-direction: column; gap: 3px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap nav">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">ADK</span><span>Google ADK Workshop</span></div>
+      <a class="nav-link" href="https://github.com/AdityaMenon-DS/google-adk-workshop" target="_blank" rel="noreferrer">View source ↗</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Interactive project preview</p>
+      <h1>Try the agents I built with Google ADK.</h1>
+      <p class="hero-copy">A small browser preview of the personal assistant and SmartStudy planner from the “Beyond Chatbots: Building AI Agents with Google ADK” workshop.</p>
+      <div class="chips" aria-label="Project technologies">
+        <span class="chip">Python</span><span class="chip">Google ADK</span><span class="chip">Tools</span><span class="chip">Multi-agent workflow</span>
+      </div>
+      <div class="notice"><strong>Preview mode</strong><span>This page runs without a Gemini key. Calculator and text counts work in your browser; search and study-plan examples are samples. The Python projects in the repository use ADK and Gemini.</span></div>
+    </section>
+
+    <section class="demo" aria-label="Agent preview">
+      <div class="demo-head">
+        <h2>Choose a project and try an example</h2>
+        <span class="demo-label">No sign-in · No API key · Prompts stay in your browser</span>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Project previews">
+        <button class="tab" id="assistant-tab" role="tab" aria-selected="true" aria-controls="assistant-view">Personal assistant</button>
+        <button class="tab" id="study-tab" role="tab" aria-selected="false" aria-controls="study-view">SmartStudy</button>
+      </div>
+
+      <section class="view active" id="assistant-view" role="tabpanel" aria-labelledby="assistant-tab">
+        <div class="assistant-grid">
+          <aside>
+            <p class="side-title">Try a prompt</p>
+            <div class="prompt-list">
+              <button class="prompt-pick" data-prompt="Calculate 18% of 50,000.">Calculate 18% of 50,000</button>
+              <button class="prompt-pick" data-prompt="Count the characters, words and sentences in this exact text: Google ADK helps developers build AI agents.">Analyze a short text</button>
+              <button class="prompt-pick" data-prompt="Search for information about Google ADK and include a source link.">Search for Google ADK</button>
+            </div>
+            <p class="small-note">The search example shows a prepared link to the ADK documentation. It does not run a live web search.</p>
+          </aside>
+          <div class="chat" aria-label="Assistant conversation preview">
+            <div class="chat-top">personal_assistant <span aria-hidden="true">·</span> browser preview</div>
+            <div class="messages" id="messages" aria-live="polite">
+              <div class="empty">Choose an example or enter a calculation or text-count request.</div>
+            </div>
+            <form class="composer" id="assistant-form">
+              <label class="sr-only" for="assistant-input" style="position:absolute;clip:rect(0,0,0,0);clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap">Enter a preview prompt</label>
+              <textarea id="assistant-input" placeholder="Try a calculation, text count, or sample search…" rows="1"></textarea>
+              <button class="primary" type="submit">Run preview</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="study-view" role="tabpanel" aria-labelledby="study-tab" hidden>
+        <div class="planner-grid">
+          <form class="form-card" id="planner-form">
+            <h3>Build a sample schedule</h3>
+            <p>This simple preview uses a fixed study-session pattern in your browser.</p>
+            <div class="field"><label for="subject">Exam subject</label><input id="subject" value="Data Structures" required></div>
+            <div class="field"><label for="days">Days until exam</label><input id="days" type="number" min="1" max="14" value="10" required></div>
+            <div class="field"><label for="hours">Study hours per day</label><input id="hours" type="number" min="1" max="8" value="3" required></div>
+            <div class="field"><label for="topics">Topics (comma separated)</label><textarea id="topics" rows="3" required>Arrays, Linked Lists, Trees, Graphs, Dynamic Programming</textarea></div>
+            <button class="primary" type="submit">Create sample plan</button>
+          </form>
+          <div class="plan-card" id="plan-output" aria-live="polite">
+            <h3 id="plan-title">Your sample plan will appear here</h3>
+            <p id="plan-summary">Enter your exam details and choose “Create sample plan.”</p>
+            <div class="plan-days" id="plan-days"></div>
+          </div>
+        </div>
+        <div class="workflow" aria-label="Production study planner workflow">
+          <div class="step"><b>1. Gather</b><span>Subject, topics and time</span></div>
+          <div class="step"><b>2. Analyze</b><span>Topic, practice and schedule agents</span></div>
+          <div class="step"><b>3. Write</b><span>Combine the study plan</span></div>
+          <div class="step"><b>4. Review</b><span>Check plan requirements</span></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="below" aria-label="About this preview">
+      <article class="info-card">
+        <h2>What this preview demonstrates</h2>
+        <p>The assistant project has calculator and text-analysis tools, plus a Google Search tool. SmartStudy coordinates specialized agents and checks the resulting plan.</p>
+      </article>
+      <article class="info-card">
+        <h2>Want to run the actual agents?</h2>
+        <p>Open the repository for the Python source, setup steps, learning notes and offline tests. Running the agents requires your own Gemini API key.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer><div class="wrap"><span>Workshop project by Aditya Menon</span><span><a href="https://github.com/AdityaMenon-DS/google-adk-workshop" target="_blank" rel="noreferrer">Source code</a> · <a href="https://google.github.io/adk-docs/" target="_blank" rel="noreferrer">Google ADK docs</a></span></div></footer>
+
+  <script>
+    const tabButtons = [...document.querySelectorAll('.tab')];
+    const views = [...document.querySelectorAll('.view')];
+    tabButtons.forEach((button) => button.addEventListener('click', () => {
+      tabButtons.forEach((tab) => tab.setAttribute('aria-selected', String(tab === button)));
+      views.forEach((view) => {
+        const active = view.id === button.getAttribute('aria-controls');
+        view.classList.toggle('active', active);
+        view.hidden = !active;
+      });
+    }));
+
+    const input = document.getElementById('assistant-input');
+    const messages = document.getElementById('messages');
+    document.querySelectorAll('.prompt-pick').forEach((button) => button.addEventListener('click', () => {
+      input.value = button.dataset.prompt;
+      input.focus();
+    }));
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, (character) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+    }
+    function assistantResponse(prompt) {
+      const percentage = prompt.match(/([\d,.]+)\s*%\s*of\s*([\d,.]+)/i);
+      if (percentage) {
+        const rate = Number(percentage[1].replaceAll(',', ''));
+        const amount = Number(percentage[2].replaceAll(',', ''));
+        if (Number.isFinite(rate) && Number.isFinite(amount)) {
+          return `Calculation: ${rate}% of ${amount.toLocaleString('en-US')} is ${(amount * rate / 100).toLocaleString('en-US')}.`;
+        }
+      }
+      const textMatch = prompt.match(/(?:exact text|text)\s*:\s*([\s\S]+)$/i);
+      if (textMatch || /count|analy[sz]e/i.test(prompt)) {
+        const text = textMatch ? textMatch[1].trim() : prompt;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const sentences = (text.match(/[.!?]+(?=\s|$)/g) || []).length + (text.trim() && !/[.!?]$/.test(text.trim()) ? 1 : 0);
+        return `Text analysis:\nCharacters: ${text.length} (including spaces and punctuation)\nWords: ${words}\nSentences: ${sentences}`;
+      }
+      if (/search|google adk/i.test(prompt)) {
+        return `Sample search result: Google ADK is a framework for building AI agents.\nThis prepared example is not a live search result. See the official documentation:`;
+      }
+      return 'This preview handles percentage calculations and text counts, and includes one prepared search example. Run the Python ADK project for the full assistant.';
+    }
+    document.getElementById('assistant-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      messages.querySelector('.empty')?.remove();
+      const userBubble = document.createElement('div');
+      userBubble.className = 'bubble user';
+      userBubble.textContent = prompt;
+      messages.append(userBubble);
+      const reply = assistantResponse(prompt);
+      const agentBubble = document.createElement('div');
+      agentBubble.className = 'bubble agent';
+      if (/prepared example/i.test(reply)) {
+        const split = reply.split('See the official documentation:');
+        agentBubble.innerHTML = `${escapeHtml(split[0])}<br><a href="https://google.github.io/adk-docs/" target="_blank" rel="noreferrer">Google ADK documentation ↗</a>`;
+      } else {
+        agentBubble.textContent = reply;
+      }
+      messages.append(agentBubble);
+      messages.scrollTop = messages.scrollHeight;
+      input.value = '';
+    });
+
+    document.getElementById('planner-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const subject = document.getElementById('subject').value.trim() || 'Your exam';
+      const days = Number(document.getElementById('days').value);
+      const hours = Number(document.getElementById('hours').value);
+      const topics = document.getElementById('topics').value.split(',').map((topic) => topic.trim()).filter(Boolean);
+      if (!days || !hours || topics.length === 0) return;
+      const totalMinutes = hours * 60;
+      const revision = Math.round(totalMinutes / 6);
+      const concept = Math.round(totalMinutes * 5 / 12);
+      const practice = totalMinutes - revision - concept;
+      document.getElementById('plan-title').textContent = `${subject}: ${days}-day sample plan`;
+      document.getElementById('plan-summary').textContent = `${hours} hours per day · ${days * hours} total study hours · browser-generated preview`;
+      const output = document.getElementById('plan-days');
+      output.replaceChildren();
+      for (let day = 1; day <= days; day += 1) {
+        const topic = topics[(day - 1) % topics.length];
+        const card = document.createElement('article');
+        card.className = 'day';
+        const heading = document.createElement('h4');
+        heading.textContent = `Day ${day} · ${topic}`;
+        const details = document.createElement('p');
+        details.textContent = `${revision} min review · ${concept} min concept work · ${practice} min practice`;
+        const focus = document.createElement('p');
+        focus.textContent = day === days ? 'Finish with mixed review and a short self-check.' : 'Work through examples, then solve practice questions.';
+        card.append(heading, details, focus);
+        output.append(card);
+      }
+    });
+  </script>
+</body>
+</html>
+
